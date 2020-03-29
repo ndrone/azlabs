@@ -45,5 +45,13 @@ resource "azurerm_network_interface" "web_server_nic" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.web_server_subnet.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.web_server_public_ip.id
   }
+}
+
+resource "azurerm_public_ip" "web_server_public_ip" {
+  name                = "web-server-public-ip"
+  location            = var.web_server_location
+  resource_group_name = azurerm_resource_group.web_server_rg.name
+  allocation_method   = "Dynamic"
 }
