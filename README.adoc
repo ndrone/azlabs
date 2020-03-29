@@ -1,0 +1,3 @@
+= Notes
+
+to login add secrets to the environment `. ./.env`
