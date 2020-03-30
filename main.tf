@@ -10,6 +10,7 @@ variable "resource_prefix" {}
 variable "web_server_address_space" {}
 variable "web_server_address_prefix" {}
 variable "web_server_name" {}
+variable "environment" {}
 
 # Create a resource group
 resource "azurerm_resource_group" "web_server_rg" {
@@ -50,8 +51,55 @@ resource "azurerm_network_interface" "web_server_nic" {
 }
 
 resource "azurerm_public_ip" "web_server_public_ip" {
-  name                = "web-server-public-ip"
+  name                = "${var.web_server_name}-public-ip"
   location            = var.web_server_location
   resource_group_name = azurerm_resource_group.web_server_rg.name
-  allocation_method   = "Dynamic"
+  allocation_method   = var.environment == "production" ? "Static" : "Dynamic"
+}
+
+resource "azurerm_network_security_group" "web_server_nsg" {
+  name                = "${var.web_server_name}-nsg"
+  location            = var.web_server_location
+  resource_group_name = azurerm_resource_group.web_server_rg.name
+}
+
+resource "azurerm_network_security_rule" "web_server_nsg_rule_rdp" {
+  name                        = "RDP Inbound"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "3389"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.web_server_rg.name
+  network_security_group_name = azurerm_network_security_group.web_server_nsg.name
+}
+
+resource "azurerm_network_interface_security_group_association" "web_server_nsg_assoc" {
+  network_interface_id      = azurerm_network_interface.web_server_nic.id
+  network_security_group_id = azurerm_network_security_group.web_server_nsg.id
+}
+
+resource "azurerm_windows_virtual_machine" "web_server" {
+  name                  = "${var.web_server_name}-vm"
+  location              = var.web_server_location
+  resource_group_name   = azurerm_resource_group.web_server_rg.name
+  network_interface_ids = [azurerm_network_interface.web_server_nic.id]
+  size                  = "Standard_B1ls"
+  admin_username        = "adminuser"
+  admin_password        = "P@$$w0rd1234!"
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2016-Datacenter"
+    version   = "latest"
+  }
 }
