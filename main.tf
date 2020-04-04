@@ -8,10 +8,12 @@ variable "web_server_location" {}
 variable "web_server_rg" {}
 variable "resource_prefix" {}
 variable "web_server_address_space" {}
-variable "web_server_address_prefix" {}
 variable "web_server_name" {}
 variable "environment" {}
 variable "web_server_count" {}
+variable "web_server_subnets" {
+  type = list
+}
 
 # Create a resource group
 resource "azurerm_resource_group" "web_server_rg" {
@@ -32,10 +34,11 @@ resource "azurerm_virtual_network" "web_server_vnet" {
 }
 
 resource "azurerm_subnet" "web_server_subnet" {
-  name                 = "${var.resource_prefix}-subnet"
+  name                 = "${var.resource_prefix}-${substr(var.web_server_subnets[count.index], 0, length(var.web_server_subnets[count.index]) - 3)}-subnet"
   resource_group_name  = azurerm_resource_group.web_server_rg.name
   virtual_network_name = azurerm_virtual_network.web_server_vnet.name
-  address_prefix       = var.web_server_address_prefix
+  address_prefix       = var.web_server_subnets[count.index]
+  count                = length(var.web_server_subnets)
 }
 
 resource "azurerm_public_ip" "web_server_public_ip" {
@@ -54,7 +57,7 @@ resource "azurerm_network_interface" "web_server_nic" {
 
   ip_configuration {
     name                          = "${var.web_server_name}-${format("%02d", count.index)}-ip"
-    subnet_id                     = azurerm_subnet.web_server_subnet.id
+    subnet_id                     = azurerm_subnet.web_server_subnet.*.id[count.index]
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.web_server_public_ip.*.id[count.index]
   }
