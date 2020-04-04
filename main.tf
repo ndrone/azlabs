@@ -81,6 +81,7 @@ resource "azurerm_network_security_rule" "web_server_nsg_rule_rdp" {
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.web_server_rg.name
   network_security_group_name = azurerm_network_security_group.web_server_nsg.name
+  count                       = var.environment == "production" ? 0 : 1
 }
 
 resource "azurerm_network_interface_security_group_association" "web_server_nsg_assoc" {
