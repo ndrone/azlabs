@@ -42,29 +42,14 @@ resource "azurerm_subnet" "web_server_subnet" {
 }
 
 resource "azurerm_public_ip" "web_server_public_ip" {
-  name                = "${var.web_server_name}-${format("%02d", count.index)}-public-ip"
+  name                = "${var.resource_prefix}-public-ip"
   location            = var.web_server_location
   resource_group_name = azurerm_resource_group.web_server_rg.name
   allocation_method   = var.environment == "production" ? "Static" : "Dynamic"
-  count               = var.web_server_count
-}
-
-resource "azurerm_network_interface" "web_server_nic" {
-  name                = "${var.web_server_name}-${format("%02d", count.index)}-nic"
-  location            = var.web_server_location
-  resource_group_name = var.web_server_rg
-  count               = var.web_server_count
-
-  ip_configuration {
-    name                          = "${var.web_server_name}-${format("%02d", count.index)}-ip"
-    subnet_id                     = azurerm_subnet.web_server_subnet.*.id[count.index]
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.web_server_public_ip.*.id[count.index]
-  }
 }
 
 resource "azurerm_network_security_group" "web_server_nsg" {
-  name                = "${var.web_server_name}-nsg"
+  name                = "${var.resource_prefix}-nsg"
   location            = var.web_server_location
   resource_group_name = azurerm_resource_group.web_server_rg.name
 }
@@ -84,30 +69,15 @@ resource "azurerm_network_security_rule" "web_server_nsg_rule_rdp" {
   count                       = var.environment == "production" ? 0 : 1
 }
 
-resource "azurerm_network_interface_security_group_association" "web_server_nsg_assoc" {
-  network_interface_id      = azurerm_network_interface.web_server_nic.*.id[count.index]
-  network_security_group_id = azurerm_network_security_group.web_server_nsg.id
-  count                     = var.web_server_count
-}
-
-resource "azurerm_availability_set" "web_server_availability_set" {
-  name                        = "${var.resource_prefix}-availability-set"
-  location                    = var.web_server_location
-  resource_group_name         = azurerm_resource_group.web_server_rg.name
-  managed                     = true
-  platform_fault_domain_count = 2
-}
-
-resource "azurerm_windows_virtual_machine" "web_server" {
-  name                  = "${var.web_server_name}-${format("%02d", count.index)}-vm"
-  location              = var.web_server_location
-  resource_group_name   = azurerm_resource_group.web_server_rg.name
-  network_interface_ids = [azurerm_network_interface.web_server_nic.*.id[count.index]]
-  availability_set_id   = azurerm_availability_set.web_server_availability_set.id
-  size                  = "Standard_B1ls"
-  admin_username        = "adminuser"
-  admin_password        = "P@$$w0rd1234!"
-  count                 = var.web_server_count
+resource "azurerm_windows_virtual_machine_scale_set" "web_server" {
+  name                = "${var.web_server_name}-vmss"
+  location            = var.web_server_location
+  resource_group_name = azurerm_resource_group.web_server_rg.name
+  upgrade_mode        = "Manual"
+  instances           = var.web_server_count
+  sku                 = "Standard_B1ls"
+  admin_username      = "adminuser"
+  admin_password      = "P@$$w0rd1234!"
 
   os_disk {
     caching              = "ReadWrite"
@@ -119,5 +89,17 @@ resource "azurerm_windows_virtual_machine" "web_server" {
     offer     = "WindowsServer"
     sku       = "2016-Datacenter"
     version   = "latest"
+  }
+
+  network_interface {
+    name                      = "web_server_network_profile"
+    primary                   = true
+    network_security_group_id = azurerm_network_security_group.web_server_nsg.id
+
+    ip_configuration {
+      name      = var.web_server_name
+      primary   = true
+      subnet_id = azurerm_subnet.web_server_subnet.*.id[0]
+    }
   }
 }
