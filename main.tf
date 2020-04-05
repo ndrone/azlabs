@@ -15,6 +15,10 @@ variable "web_server_subnets" {
   type = list
 }
 
+locals {
+  web_server_name = var.environment == "production" ? "${var.web_server_name}-prd" : "${var.web_server_name}-dev"
+}
+
 # Create a resource group
 resource "azurerm_resource_group" "web_server_rg" {
   name     = var.web_server_rg
@@ -70,7 +74,7 @@ resource "azurerm_network_security_rule" "web_server_nsg_rule_rdp" {
 }
 
 resource "azurerm_windows_virtual_machine_scale_set" "web_server" {
-  name                = "${var.web_server_name}-vmss"
+  name                = "${local.web_server_name}-vmss"
   location            = var.web_server_location
   resource_group_name = azurerm_resource_group.web_server_rg.name
   upgrade_mode        = "Manual"
@@ -97,7 +101,7 @@ resource "azurerm_windows_virtual_machine_scale_set" "web_server" {
     network_security_group_id = azurerm_network_security_group.web_server_nsg.id
 
     ip_configuration {
-      name      = var.web_server_name
+      name      = local.web_server_name
       primary   = true
       subnet_id = azurerm_subnet.web_server_subnet.*.id[0]
     }
