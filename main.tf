@@ -128,6 +128,7 @@ resource "azurerm_windows_virtual_machine_scale_set" "web_server" {
   computer_name_prefix = "web"
   admin_username       = "adminuser"
   admin_password       = "P@$$w0rd1234!"
+  provision_vm_agent   = true
 
   os_disk {
     caching              = "ReadWrite"
@@ -154,3 +155,15 @@ resource "azurerm_windows_virtual_machine_scale_set" "web_server" {
     }
   }
 }
+
+# resource "azurerm_virtual_machine_scale_set_extension" "web_server_vmss_extension" {
+#   name                         = "${local.web_server_name}-vmss-ext"
+#   virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.web_server.id
+#   publisher                    = "Microsoft.Compute"
+#   type                         = "CustomScriptExtension"
+#   type_handler_version         = "1.10.5"
+#   settings = jsonencode({
+#     "fileUris"         = ["https://github.com/eltimmo/learning/blob/master/azureInstallWebServer.ps1"],
+#     "commandToExecute" = "start powershell -ExecutionPolicy Unrestricted -File azureInstallWebServer.ps1"
+#   })
+# }
