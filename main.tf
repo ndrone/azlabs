@@ -1,6 +1,6 @@
 provider "azurerm" {
   # whilst the `version` attribute is optional, we recommend pinning to a given version of the Provider
-  version = "=2.0.0"
+  version = "=2.2.0"
   features {}
 }
 
@@ -12,7 +12,7 @@ variable "web_server_name" {}
 variable "environment" {}
 variable "web_server_count" {}
 variable "web_server_subnets" {
-  type = list
+  type = list(string)
 }
 variable "terraform_script_version" {}
 variable "domain_name_label" {}
@@ -37,7 +37,8 @@ resource "azurerm_virtual_network" "web_server_vnet" {
   name                = "${var.resource_prefix}-vnet"
   location            = var.web_server_location
   resource_group_name = azurerm_resource_group.web_server_rg.name
-  address_space       = [var.web_server_address_space]
+  address_space       = [
+    var.web_server_address_space]
   # The below subnet doesn't work with a nic
   # subnet {
   #   name           = "${var.resource_prefix}-subnet"
@@ -118,31 +119,43 @@ resource "azurerm_lb_rule" "web_server_lb_http_rule" {
   backend_address_pool_id        = azurerm_lb_backend_address_pool.web_server_lb_backend_pool.id
 }
 
-resource "azurerm_windows_virtual_machine_scale_set" "web_server" {
-  name                 = "${local.web_server_name}-vmss"
-  location             = var.web_server_location
-  resource_group_name  = azurerm_resource_group.web_server_rg.name
-  upgrade_mode         = "Manual"
-  instances            = var.web_server_count
-  sku                  = "Standard_B1ls"
-  computer_name_prefix = "web"
-  admin_username       = "adminuser"
-  admin_password       = "P@$$w0rd1234!"
-  provision_vm_agent   = true
+resource "azurerm_virtual_machine_scale_set" "web_server" {
+  name                = "${local.web_server_name}-vmss"
+  location            = var.web_server_location
+  resource_group_name = azurerm_resource_group.web_server_rg.name
+  upgrade_policy_mode = "Manual"
 
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+  sku {
+    capacity = var.web_server_count
+    name     = "Standard_B1ls"
+    tier     = "Standard"
   }
 
-  source_image_reference {
+  os_profile {
+    admin_username       = "adminuser"
+    admin_password       = "P@$$w0rd1234!"
+    computer_name_prefix = "web"
+  }
+
+  os_profile_windows_config {
+    provision_vm_agent = true
+  }
+
+  storage_profile_os_disk {
+    name              = ""
+    caching           = "ReadWrite"
+    managed_disk_type = "Standard_LRS"
+    create_option     = "FromImage"
+  }
+
+  storage_profile_image_reference {
     publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2016-Datacenter"
+    offer     = "WindowsServerSemiAnnual"
+    sku       = "Datacenter-Core-1709-smalldisk"
     version   = "latest"
   }
 
-  network_interface {
+  network_profile {
     name                      = "web_server_network_profile"
     primary                   = true
     network_security_group_id = azurerm_network_security_group.web_server_nsg.id
@@ -151,19 +164,22 @@ resource "azurerm_windows_virtual_machine_scale_set" "web_server" {
       name                                   = local.web_server_name
       primary                                = true
       subnet_id                              = azurerm_subnet.web_server_subnet.*.id[0]
-      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.web_server_lb_backend_pool.id]
+      load_balancer_backend_address_pool_ids = [
+        azurerm_lb_backend_address_pool.web_server_lb_backend_pool.id]
     }
   }
-}
 
-# resource "azurerm_virtual_machine_scale_set_extension" "web_server_vmss_extension" {
-#   name                         = "${local.web_server_name}-vmss-ext"
-#   virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.web_server.id
-#   publisher                    = "Microsoft.Compute"
-#   type                         = "CustomScriptExtension"
-#   type_handler_version         = "1.10.5"
-#   settings = jsonencode({
-#     "fileUris"         = ["https://github.com/eltimmo/learning/blob/master/azureInstallWebServer.ps1"],
-#     "commandToExecute" = "start powershell -ExecutionPolicy Unrestricted -File azureInstallWebServer.ps1"
-#   })
-# }
+  //  extension {
+  //    name                 = "${local.web_server_name}-extension"
+  //    publisher            = "Microsoft.Compute"
+  //    type                 = "CustomScriptExtension"
+  //    type_handler_version = "1.10"
+  //
+  //    settings = <<SETTINGS
+  //    {
+  //      "fileUris": ["https://raw.githubusercontent.com/eltimmo/learning/master/azureInstallWebServer.ps1"],
+  //      "commandToExecute": "start powershell -executionPolicy Unrestricted -File azureInstallWebServer.ps1"
+  //    }
+  //    SETTINGS
+  //  }
+}
