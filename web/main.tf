@@ -170,6 +170,11 @@ resource "azurerm_virtual_machine_scale_set" "web_server" {
     }
   }
 
+  boot_diagnostics {
+    enabled = true
+    storage_uri = azurerm_storage_account.storage_account.primary_blob_endpoint
+  }
+
   extension {
     name                 = "${local.web_server_name}-extension"
     publisher            = "Microsoft.Compute"
@@ -183,4 +188,12 @@ resource "azurerm_virtual_machine_scale_set" "web_server" {
       }
       SETTINGS
   }
+}
+
+resource "azurerm_storage_account" "storage_account" {
+  account_replication_type = "LRS"
+  account_tier             = "Standard"
+  location                 = var.web_server_location
+  name                     = "tempdasgf"
+  resource_group_name      = var.web_server_rg
 }
