@@ -133,12 +133,13 @@ resource "azurerm_virtual_machine_scale_set" "web_server" {
 
   os_profile {
     admin_username       = "adminuser"
-    admin_password       = "P@$$w0rd1234!"
+    admin_password       = data.azurerm_key_vault_secret.admin_password.value
     computer_name_prefix = "web"
   }
 
   os_profile_windows_config {
     provision_vm_agent = true
+    enable_automatic_upgrades = true
   }
 
   storage_profile_os_disk {
@@ -169,17 +170,17 @@ resource "azurerm_virtual_machine_scale_set" "web_server" {
     }
   }
 
-    extension {
-      name                 = "${local.web_server_name}-extension"
-      publisher            = "Microsoft.Compute"
-      type                 = "CustomScriptExtension"
-      type_handler_version = "1.10"
+  extension {
+    name                 = "${local.web_server_name}-extension"
+    publisher            = "Microsoft.Compute"
+    type                 = "CustomScriptExtension"
+    type_handler_version = "1.10"
 
-      settings = <<SETTINGS
+    settings = <<SETTINGS
       {
         "fileUris": ["https://raw.githubusercontent.com/eltimmo/learning/master/azureInstallWebServer.ps1"],
         "commandToExecute": "start powershell -executionPolicy Unrestricted -File azureInstallWebServer.ps1"
       }
       SETTINGS
-    }
+  }
 }
