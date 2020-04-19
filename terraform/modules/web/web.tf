@@ -27,11 +27,12 @@ resource "azurerm_virtual_network" "web_server_vnet" {
 }
 
 resource "azurerm_subnet" "web_server_subnet" {
-  name                 = "${var.resource_prefix}-${substr(var.web_server_subnets[count.index], 0, length(var.web_server_subnets[count.index]) - 3)}-subnet"
+  for_each = var.web_server_subnets
+
+  name                 = each.key
   resource_group_name  = azurerm_resource_group.web_server_rg.name
   virtual_network_name = azurerm_virtual_network.web_server_vnet.name
-  address_prefix       = var.web_server_subnets[count.index]
-  count                = length(var.web_server_subnets)
+  address_prefix       = each.value
 }
 
 resource "azurerm_public_ip" "web_server_lb_public_ip" {
@@ -143,7 +144,7 @@ resource "azurerm_virtual_machine_scale_set" "web_server" {
     ip_configuration {
       name                                   = local.web_server_name
       primary                                = true
-      subnet_id                              = azurerm_subnet.web_server_subnet.*.id[0]
+      subnet_id                              = azurerm_subnet.web_server_subnet["web-server"].id
       load_balancer_backend_address_pool_ids = [
         azurerm_lb_backend_address_pool.web_server_lb_backend_pool.id]
     }

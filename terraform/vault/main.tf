@@ -46,4 +46,10 @@ resource "azurerm_key_vault" "vault_kv" {
       "get",
     ]
   }
+
+//  We only want Terraform to create key_vault the access_policy(s) and network change by people within the portal
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes = [access_policy, network_acls]
+  }
 }

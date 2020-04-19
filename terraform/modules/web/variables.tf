@@ -8,5 +8,5 @@ variable "web_server_location" {}
 variable "web_server_name" {}
 variable "web_server_rg" {}
 variable "web_server_subnets" {
-  type = list(string)
+  type = map(string)
 }

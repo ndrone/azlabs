@@ -15,7 +15,10 @@ module "web_us2e" {
   web_server_location = "eastus2"
   web_server_name = var.web_server_name
   web_server_rg = "${var.web_server_rg}-us2e"
-  web_server_subnets = ["1.0.1.0/24", "1.0.2.0/24"]
+  web_server_subnets = {
+    web-server = "1.0.1.0/24"
+    AzureBastionSubnet = "1.0.2.0/24"
+  }
 }
 
 module "web_us2w" {
@@ -29,5 +32,8 @@ module "web_us2w" {
   web_server_location = "westus2"
   web_server_name = var.web_server_name
   web_server_rg = "${var.web_server_rg}-us2w"
-  web_server_subnets = ["2.0.1.0/24", "2.0.2.0/24"]
+  web_server_subnets = {
+    web-server = "2.0.1.0/24"
+    AzureBastionSubnet = "2.0.2.0/24"
+  }
 }
