@@ -1,0 +1,12 @@
+= Notes
+
+To use Terraform with Azure. You will need to export the following variables.
+[source,bash]
+----
+export ARM_CLIENT_ID="xxx"
+export ARM_CLIENT_SECRET="xxx"
+export ARM_TENANT_ID="xxx"
+export ARM_SUBSCRIPTION_ID="xxx"
+----
+In this directory I created `.env` with the above so that I can source it into the CLI with
+`. ./.env`.
