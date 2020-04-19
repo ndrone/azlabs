@@ -1,4 +1,5 @@
 variable "admin_password" {}
+variable "domain_name_label" {}
 variable "environment" {}
 variable "resource_prefix" {}
 variable "terraform_script_version" {}
