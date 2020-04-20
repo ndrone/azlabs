@@ -183,5 +183,5 @@ resource "azurerm_storage_account" "storage_account" {
   account_tier             = "Standard"
   location                 = var.web_server_location
   name                     = "webstorage${random_string.random.result}"
-  resource_group_name      = var.web_server_rg
+  resource_group_name      = azurerm_resource_group.web_server_rg.name
 }

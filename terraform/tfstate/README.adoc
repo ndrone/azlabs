@@ -1,0 +1,5 @@
+To start fresh you have to comment out the `backend.tf` This is the chicken or egg problem. You need
+to create the resource group, storage account, and the container before being able to create
+the `backend.tf` file. *So why can we reference the names like we do in main?* But this file gets
+copied to all the other directories with the exception of modules. The `key` property is what needs
+to be unique to each folder.

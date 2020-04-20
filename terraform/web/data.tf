@@ -1,5 +1,5 @@
 data "azurerm_key_vault" "key_vault" {
-  name                = "vault-rg-kv2"
+  name                = "vault-rg-kv3"
   resource_group_name = "vault-rg"
 }
 

@@ -1,4 +1,8 @@
-= Notes
+= Learning Terraform on Azure
+
+Taking the course https://www.udemy.com/course/learning-terraform-on-microsoft-azure/
+
+== Setup
 
 To use Terraform with Azure. You will need to export the following variables.
 [source,bash]
@@ -10,3 +14,22 @@ export ARM_SUBSCRIPTION_ID="xxx"
 ----
 In this directory I created `.env` with the above so that I can source it into the CLI with
 `. ./.env`.
+
+== Learning's
+
+1. Create remote Terraform state repository
+2. Create vault for secrets
+3. After reading/watching https://www.hashicorp.com/resources/lessons-learned-300000-lines-code
+it is best to keep things separate based on deployment. Hence, why `vault` is in a different folder
+as well as `tfstate`.
+4. In real world `vault` and `web` directories would contain sub folders of environments (dev,
+test, stage, prod...)
+
+== Pondering's
+
+1. Breaking down the web module further (firewall, load balancer...)
+2. Place the traffic manager in a module? Do the traffic_manager endpoints belong in the web module?
+    a. Port number 80 is disjointed from the firewall in the web module and the traffic manager.
+        Best way to resolve?
+    b. Should traffic manager resource group and profile be in a separate folder? How does this
+        help with sub point a?

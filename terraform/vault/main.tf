@@ -19,7 +19,7 @@ resource "azurerm_resource_group" "vault_rg" {
 }
 
 resource "azurerm_key_vault" "vault_kv" {
-  name                        = "${var.vault_rg}-kv2"
+  name                        = "${var.vault_rg}-kv3" // has to be unique on every creation
   location                    = azurerm_resource_group.vault_rg.location
   resource_group_name         = azurerm_resource_group.vault_rg.name
   enabled_for_disk_encryption = true
