@@ -23,7 +23,9 @@ In this directory I created `.env` with the above so that I can source it into t
 it is best to keep things separate based on deployment. Hence, why `vault` is in a different folder
 as well as `tfstate`.
 4. In real world `vault` and `web` directories would contain sub folders of environments (dev,
-test, stage, prod...)
+test, stage, prod...)... possibly. I could fight both of something meant for dev being deployed to
+production because of the wrong variable set. But, I can also see being in the wrong folder and
+having the same problem.
 
 == Pondering's
 
@@ -33,3 +35,15 @@ test, stage, prod...)
         Best way to resolve?
     b. Should traffic manager resource group and profile be in a separate folder? How does this
         help with sub point a?
+3. Should bastion be a part of the web module?
+4. If this was the real world wouldn't I just be deploying updated vm's? Once the
+network infrastructure is there I don't think I would want to create that every time.
+
+== Next steps
+
+1. Get the vault data from the terraform backend output
+2. Move traffic manager rg and profile to it's own directory
+3. Move traffic manager endpoints to web module
+4. Move bastion to web module
+5. Separate the web server vm deployments from the networking pieces.
+6. Create Dev Prod folders.
