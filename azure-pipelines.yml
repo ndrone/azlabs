@@ -21,3 +21,15 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
     tasks: 'build'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: './pipelines/java/azpipelines/build/libs/'
+    Contents: '*.jar'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'java-app'
+    publishLocation: 'Container'
