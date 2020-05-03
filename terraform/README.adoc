@@ -46,4 +46,4 @@ network infrastructure is there I don't think I would want to create that every 
 3. Move traffic manager endpoints to web module
 4. Move bastion to web module
 5. Separate the web server vm deployments from the networking pieces.
-6. Create Dev Prod folders.
+6. Create Dev and Prod folders.
