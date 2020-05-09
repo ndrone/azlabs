@@ -20,6 +20,7 @@ resource "azurerm_app_service_plan" "java_web_plan" {
   location            = azurerm_resource_group.java_web_rg.location
   resource_group_name = azurerm_resource_group.java_web_rg.name
   kind                = "Linux"
+  reserved            = true
 
   sku {
     tier = "Free"
