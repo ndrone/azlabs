@@ -23,8 +23,8 @@ resource "azurerm_app_service_plan" "java_web_plan" {
   reserved            = true
 
   sku {
-    tier = "Free"
-    size = "F1"
+    tier = "Basic"
+    size = "B1"
   }
 }
 
